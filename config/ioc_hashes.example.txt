@@ -1,0 +1,3 @@
+# One SHA256 per line; text after the hash is used as a label.
+# `sha256sum` output can be used directly.
+# 0000000000000000000000000000000000000000000000000000000000000000  example-label

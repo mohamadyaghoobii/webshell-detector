@@ -1,0 +1,162 @@
+# WebShell Hunter - default configuration
+#
+# These values mirror the built-in defaults (scanner/config.py). Copy this file,
+# change what you need and pass it with --config. CLI options override the file.
+# Only keys you set are changed; everything else keeps its default.
+
+scanner:
+  max_file_size_mb: 20          # bytes analysed per file (whole file is still hashed)
+  workers: 8                    # parallel workers (processes by default, see --executor)
+  report_min_severity: LOW      # INFO | LOW | MEDIUM | HIGH | CRITICAL
+  snippets: true                # record short, sanitised evidence snippets
+  max_snippet_length: 160
+  max_evidence_per_indicator: 3
+  entropy_sample_bytes: 65536
+  media_tail_check_bytes: 262144   # tail of oversized media checked for appended PHP
+  decode_layers: 3              # static Base64/gzip/rot13 decoding depth (never executed)
+  max_decoded_bytes: 4194304
+  suggest_commands: true
+  default_excludes: true        # apply the default_excludes list below
+
+# Walked unless scanner.default_excludes is false (--no-default-excludes).
+# Attackers occasionally hide in node_modules/: consider a full scan too.
+default_excludes:
+  - .git/**
+  - node_modules/**
+
+# Additional exclusions (relative globs, ** supported)
+exclude: []
+#  - var/cache/**
+#  - "*.log"
+
+filenames:
+  # Matched against the file stem (name before the first dot); weak on its own.
+  known_webshell: [c99, c100, r57, wso, wso2, filesman, shell, webshell, backdoor, cmd,
+                   cmdshell, alfa, alfashell, priv8, sh3ll, phpspy, bypass, symlink, mini,
+                   minishell, weevely, china_chopper, chopper, godzilla, behinder]
+  suspicious: [mailer, upload, up, uploader, adminer, x, xx, xxx, test1, info, phpinfo]
+  short_name_max_length: 3
+
+upload_dirs:
+  # Lower-case directory components that indicate user-supplied content.
+  strong: [upload, uploads, uploaded, media, image, images, img, files, attachment,
+           attachments, avatar, avatars, userfiles, user_uploads, pictures, photos, documents]
+  weak: [cache, tmp, temp, storage, data, assets, static, public]
+  # Framework locations where compiled PHP is expected.
+  benign_generated: ["bootstrap/cache/**", "storage/framework/**", "var/cache/**",
+                     "cache/smarty/**", "templates_c/**"]
+
+scoring:
+  # Severity = highest band reached by the score; indicator floors may raise it.
+  thresholds: {LOW: 10, MEDIUM: 20, HIGH: 35, CRITICAL: 60}
+  category_caps:
+    sink: 10
+    source: 4
+    obfuscation: 25
+    obfuscated_execution: 35
+    source_to_sink: 60
+    dynamic_invocation: 40
+    known_marker: 40
+    filename: 10
+    location: 25
+    content_mismatch: 30
+    metadata: 20
+    timeline: 8
+    config_persistence: 45
+    dropper: 25
+    network: 25
+    baseline: 15
+    git: 12
+    yara: 40
+    ioc_hash: 100
+    cross_reference: 30
+    combination: 45
+    persistence: 80
+    archive: 20
+  # Per-rule weight overrides (rule ids are shown in JSON/HTML reports)
+  weights: {}
+  #  php.sink.eval: 2
+  #  combo.decoder_eval: 8
+
+allowlist:
+  mode: exclude                 # exclude | mark (mark = keep but flag as allowlisted)
+  paths: []                     # exact relative/absolute paths or globs
+  hashes: []                    # SHA256 of known-good files
+  regex: []                     # applied to the relative path
+  # Third-party code: findings up to vendor_suppress_up_to are allowlisted;
+  # stronger findings are still reported.
+  vendor_dirs: ["vendor/**", "node_modules/**", "wp-includes/**", "wp-admin/**"]
+  vendor_suppress_up_to: LOW
+  never_suppress_ioc_hash: true
+
+persistence:
+  enabled: false                # or --persistence
+  locations:
+    - /etc/crontab
+    - /etc/anacrontab
+    - /etc/cron.d
+    - /etc/cron.hourly
+    - /etc/cron.daily
+    - /etc/cron.weekly
+    - /etc/cron.monthly
+    - /var/spool/cron
+    - /etc/systemd/system
+    - /usr/lib/systemd/system
+    - /lib/systemd/system
+    - /run/systemd/system
+    - /etc/rc.local
+    - /etc/init.d
+    - /etc/profile.d
+    - /etc/ld.so.preload
+    - /etc/supervisor
+    - /etc/supervisord.d
+    - /root/.config/systemd/user
+    - /home/*/.config/systemd/user
+  php_config_locations:
+    - /etc/php
+    - /etc/php.ini
+    - /etc/php.d
+    - /etc/php-fpm.d
+    - /etc/php-fpm.conf
+    - /usr/local/etc/php
+    - /usr/local/lib/php.ini
+    - /opt/*/etc/php*
+    - /etc/opt/remi/*/php.ini
+    - /etc/opt/remi/*/php.d
+  max_files: 20000
+  max_file_size: 1048576
+  report_min_score: 12
+  follow_scripts_depth: 2       # follow scripts executed by cron/systemd (read-only)
+
+webserver_config:
+  enabled: false                # or --webserver-config
+  locations: [/etc/apache2, /etc/httpd, /etc/nginx, /usr/local/apache2/conf,
+              /usr/local/nginx/conf, /etc/lighttpd, /etc/caddy]
+
+yara:
+  enabled: false                # or --yara PATH
+  rules: rules/
+  timeout: 30
+
+git:
+  enabled: false                # or --git
+
+archives:
+  enabled: false                # or --scan-archives
+  max_members: 5000
+  max_member_size_mb: 10
+  max_total_mb: 256
+  max_ratio: 150
+
+iocs:
+  enabled: true
+  min_severity: MEDIUM          # extract static IOCs for findings at/above this
+  max_per_type: 50
+  ignore_domains: [w3.org, php.net, wordpress.org, schema.org, github.com, googleapis.com,
+                   gstatic.com, gravatar.com, jquery.com, example.com, example.org,
+                   mozilla.org, apache.org, microsoft.com]
+
+hash_lists: []                  # SHA256 IOC files, same as --hash-list
+
+quarantine:
+  min_severity: CRITICAL

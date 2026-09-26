@@ -1,0 +1,4 @@
+# The core scanner uses only the Python standard library (3.10+).
+# Optional extras:
+PyYAML>=6.0          # YAML configuration / allowlist files (JSON works without it)
+yara-python>=4.3     # --yara support (the scanner runs without it)

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webshell-hunter"
+version = "1.0.0"
+description = "Defensive, static web shell and persistence hunter for Linux web servers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Security",
+  "Environment :: Console",
+]
+
+[project.optional-dependencies]
+yaml = ["PyYAML>=6.0"]
+yara = ["yara-python>=4.3"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+webshell-hunter = "scanner.cli:main"
+
+[tool.setuptools]
+packages = ["scanner", "scanner.reporting"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

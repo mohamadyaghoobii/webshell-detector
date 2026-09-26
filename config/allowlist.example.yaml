@@ -1,0 +1,11 @@
+# Example allowlist (use with --allowlist). Prefer hashes over paths:
+# a path allowlist also hides a malicious file placed at that path.
+allowlist:
+  mode: mark
+  paths:
+    - wp-content/plugins/wordfence/**
+    - vendor/phpmailer/phpmailer/src/PHPMailer.php
+  hashes:
+    - 0000000000000000000000000000000000000000000000000000000000000000
+  regex:
+    - "^tests?/"
